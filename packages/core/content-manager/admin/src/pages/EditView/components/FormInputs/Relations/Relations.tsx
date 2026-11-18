@@ -751,8 +751,13 @@ const RelationModalWithContext = ({
   const options = data?.results ?? [];
 
   React.useLayoutEffect(() => {
+    /**
+     * Once a relation has been connected/disconnected, reset the search so that
+     * reopening the combobox lists every remaining entry instead of the stale query.
+     */
     setTextValue('');
-  }, [fieldValue]);
+    setSearchParams((s) => (s._q === '' && s.page === 1 ? s : { ...s, _q: '', page: 1 }));
+  }, [fieldValue, setSearchParams]);
 
   const handleSearch = async (search: string) => {
     setSearchParams((s) => ({ ...s, _q: search, page: 1 }));
@@ -812,6 +817,9 @@ const RelationModalWithContext = ({
           })}
           onLoadMore={handleLoadMore}
           textValue={textValue}
+          // Connected relations are rendered in the list below, the combobox itself never keeps a
+          // selected value (otherwise it restores the selected label as the search text).
+          value={null}
           onChange={handleChange}
           onTextValueChange={(text) => {
             setTextValue(text);
